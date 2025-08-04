@@ -1,0 +1,88 @@
+<%= layout('../layouts/boilerplate.ejs') %>
+
+<div class="row">
+  <h1 class="text-center">Edit Campground</h1>
+  <div class="col-6 offset-3">
+    <form
+      action="/campground/<%= camp._id %>?_method=PUT"
+      method="POST"
+      novalidate
+      class="validatedBootS"
+    >
+      <div class="mb-3">
+        <label class="form-label" for="title">Edit Title</label>
+        <input
+          type="text"
+          id="title"
+          class="form-control"
+          name="camp[title]"
+          value="<%= camp.title %>"
+          placeholder="Title"
+          required
+        />
+        <div class="valid-feedback">Looks Good!!</div>
+      </div>
+
+      <div class="mb-3">
+        <label class="form-label" for="location">Edit Location</label>
+        <input
+          type="text"
+          id="location"
+          class="form-control"
+          name="camp[location]"
+          value="<%= camp.location %>"
+          placeholder="Location"
+          required
+        />
+        <div class="valid-feedback">Looks Good!!</div>
+      </div>
+
+      <div class="mb-3">
+        <label class="form-label" for="image">Edit Image URL</label>
+        <input
+          type="text"
+          id="image"
+          class="form-control"
+          name="camp[image]"
+          value="<%= camp.image %>"
+          placeholder="Image URL"
+          required
+        />
+        <div class="valid-feedback">Looks Good!!</div>
+      </div>
+
+      <div class="mb-3">
+        <label class="form-label" for="price">Edit Price</label>
+        <input
+          type="text"
+          id="price"
+          class="form-control"
+          name="camp[price]"
+          value="<%= camp.price %>"
+          placeholder="$"
+          required
+        />
+        <div class="valid-feedback">Looks Good!!</div>
+      </div>
+
+      <div class="mb-3">
+        <label class="form-label" for="description">Edit Description</label>
+        <textarea
+          class="form-control"
+          id="description"
+          name="camp[description]"
+          placeholder="Description"
+          required
+        >
+<%= camp.description %></textarea
+        >
+        <div class="valid-feedback">Looks Good!!</div>
+      </div>
+
+      <button class="btn btn-primary">Update Campground</button>
+    </form>
+    <a href="/campground/<%= camp._id %>" class="btn btn-secondary mt-3"
+      >Cancel</a
+    >
+  </div>
+</div>

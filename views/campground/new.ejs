@@ -1,0 +1,71 @@
+<%=layout('../layouts/boilerplate.ejs')%>
+<div class="row">
+  <h1 class="text-center">New Campground</h1>
+  <div class="col-6 offset-3">
+    <form action="/campground" class="validatedBootS" method="post" novalidate>
+      <!--so that bootstrap can take over and make it better-->
+      <div class="mb-3">
+        <label class="form-label" for="title">Add Title</label>
+        <input
+          type="text"
+          id="title"
+          class="form-control"
+          name="camp[title]"
+          placeholder="Title"
+          required
+        />
+        <div class="valid-feedback">Looks Good!!</div>
+      </div>
+      <div class="mb-3">
+        <label class="form-label" for="location">Add Location</label>
+        <input
+          class="form-control"
+          type="text"
+          id="location"
+          name="camp[location]"
+          placeholder="Location"
+          required
+        />
+        <div class="valid-feedback">Looks Good!!</div>
+      </div>
+      <div class="mb-3">
+        <label class="form-label" for="image">Add Image</label>
+        <input
+          class="form-control"
+          type="text"
+          id="image"
+          name="camp[image]"
+          placeholder="Image"
+          required
+        />
+        <div class="valid-feedback">Looks Good!!</div>
+      </div>
+      <div class="mb-3">
+        <label class="form-label" for="price">Add Price</label>
+        <input
+          class="form-control"
+          type="text"
+          id="price"
+          name="camp[price]"
+          placeholder="$"
+          required
+        />
+        <div class="valid-feedback">Looks Good!!</div>
+      </div>
+      <div class="mb-3">
+        <label class="form-label" for="description">Add Description</label>
+        <textarea
+          class="form-control"
+          type="text"
+          id="description"
+          name="camp[description]"
+          placeholder="Description"
+          required
+        ></textarea>
+        <div class="valid-feedback">Looks Good!!</div>
+      </div>
+      <button type="submit">Submit</button>
+    </form>
+    <a href="/campground">Cancel</a>
+  </div>
+</div>

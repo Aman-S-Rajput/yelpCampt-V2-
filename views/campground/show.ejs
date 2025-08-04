@@ -1,0 +1,32 @@
+<%= layout('../layouts/boilerplate.ejs') %>
+
+<div class="container my-5">
+  <div class="card shadow" style="max-width: 600px; margin: auto">
+    <img src="<%= camp.image %>" class="card-img-top" alt="<%= camp.title %>" />
+
+    <div class="card-body">
+      <h2 class="card-title"><%= camp.title %></h2>
+      <h5 class="text-muted mb-2"><%= camp.location %></h5>
+
+      <h6 class="mb-3">
+        <span class="badge bg-success fs-6">$<%= camp.price %></span>
+      </h6>
+
+      <p class="card-text"><%= camp.description %></p>
+
+      <div class="mt-4 d-flex gap-2 flex-wrap">
+        <a href="/campground/<%= camp._id %>/edit" class="btn btn-primary"
+          >Edit Campground</a
+        >
+        <a href="/campground" class="btn btn-secondary">All Campgrounds</a>
+        <form
+          action="/campground/<%= camp._id %>?_method=DELETE"
+          method="POST"
+          class="d-inline"
+        >
+          <button type="submit" class="btn btn-danger">Delete</button>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
