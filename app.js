@@ -5,10 +5,11 @@ const methodOverride = require("method-override");
 const ejsMate = require("ejs-mate");
 const Joi = require("joi");
 const Campground = require("./models/campground");
+const Review = require("./models/reviews");
+
 const catchAsync = require("./utils/catchAsync");
 const ExpressError = require("./utils/expressError");
 const { campgroundSchema } = require("./schemas.js");
-// validateCampground intentionally omitted per your request
 
 const validateCampground = (req, res, next) => {
   campgroundSchema.validate();
@@ -57,6 +58,37 @@ app.get("/campground/new", (req, res) => {
   res.render("campground/new");
 });
 
+app.post(
+  "/campground/:id/reviews",
+  catchAsync(async (req, res) => {
+    const { id } = req.params;
+
+    const newReview = new Review(req.body.review);
+    await newReview.save();
+
+    const camp = await Campground.findById(id);
+    camp.reviews.push(newReview._id);
+    await camp.save();
+
+    const reviews = await Review.find({ _id: { $in: camp.reviews } });
+
+    res.render("campground/show", { camp, reviews });
+  })
+);
+
+app.delete(
+  "/campground/:id/review/:reviewId",
+  catchAsync(async (req, res) => {
+    const { id, reviewId } = req.params;
+
+    await Campground.findByIdAndUpdate(id, { $pull: { reviews: reviewId } });
+
+    await Review.findByIdAndDelete(reviewId);
+
+    res.redirect(`/campground/${id}`);
+  })
+);
+
 // CREATE
 app.post(
   "/campground",
@@ -72,10 +104,8 @@ app.post(
 app.get(
   "/campground/:id",
   catchAsync(async (req, res) => {
-    const { id } = req.params;
-    const camp = await Campground.findById(id);
-    if (!camp) throw new ExpressError("Campground not found", 404);
-    res.render("campground/show", { camp });
+    const camp = await Campground.findById(req.params.id).populate("reviews");
+    res.render("campground/show", { camp, reviews: camp.reviews });
   })
 );
 
