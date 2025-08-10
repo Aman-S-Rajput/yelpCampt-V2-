@@ -2,26 +2,13 @@ const express = require("express");
 const path = require("path");
 const mongoose = require("mongoose");
 const methodOverride = require("method-override");
+const flash = require("connect-flash");
 const ejsMate = require("ejs-mate");
-const Joi = require("joi");
-const Campground = require("./models/campground");
-const Review = require("./models/reviews");
+const session = require("express-session");
 
-const catchAsync = require("./utils/catchAsync");
 const ExpressError = require("./utils/expressError");
-const { campgroundSchema } = require("./schemas.js");
-
-const validateCampground = (req, res, next) => {
-  campgroundSchema.validate();
-  const result = campgroundSchema.validate(req.body);
-  if (result.error) {
-    const message = result.error.details.map((el) => el.message).join(",");
-    throw new ExpressError(message, 400);
-  } else {
-    next();
-  }
-};
-
+const campgroundRoutes = require("./routes/campground");
+const reviewRoutes = require("./routes/reviews");
 mongoose
   .connect("mongodb://localhost:27017/yelp-camp")
   .then(() => {
@@ -33,11 +20,36 @@ mongoose
 
 const app = express();
 
+app.use(flash());
 app.use(express.urlencoded({ extended: true }));
 app.use(methodOverride("_method"));
 app.engine("ejs", ejsMate);
 app.set("view engine", "ejs");
 app.set("views", path.join(__dirname, "views"));
+
+const sessionconfig = {
+  secret: "thisshouldbe a long secret",
+  resave: false,
+  saveUninitialized: true,
+  cookie: {
+    httpOnly: true,
+    expires: Date.now() + 1000 * 60 * 60 * 24 * 7, // 7 days
+  },
+};
+
+app.use(session(sessionconfig));
+
+app.use(methodOverride("_method"));
+app.use(express.static(path.join(__dirname, "public")));
+
+app.use((req, res, next) => {
+  res.locals.success = req.flash("success");
+  res.locals.error = req.flash("error");
+  next();
+});
+
+app.use("/campground/:id/review", reviewRoutes);
+app.use("/campground", campgroundRoutes);
 
 // Home
 app.get("/", (req, res) => {
@@ -45,107 +57,6 @@ app.get("/", (req, res) => {
 });
 
 // INDEX
-app.get(
-  "/campground",
-  catchAsync(async (req, res) => {
-    const campgrounds = await Campground.find({});
-    res.render("campground/campground", { campgrounds });
-  })
-);
-
-// NEW
-app.get("/campground/new", (req, res) => {
-  res.render("campground/new");
-});
-
-app.post(
-  "/campground/:id/reviews",
-  catchAsync(async (req, res) => {
-    const { id } = req.params;
-
-    const newReview = new Review(req.body.review);
-    await newReview.save();
-
-    const camp = await Campground.findById(id);
-    camp.reviews.push(newReview._id);
-    await camp.save();
-
-    const reviews = await Review.find({ _id: { $in: camp.reviews } });
-
-    res.render("campground/show", { camp, reviews });
-  })
-);
-
-app.delete(
-  "/campground/:id/review/:reviewId",
-  catchAsync(async (req, res) => {
-    const { id, reviewId } = req.params;
-
-    await Campground.findByIdAndUpdate(id, { $pull: { reviews: reviewId } });
-
-    await Review.findByIdAndDelete(reviewId);
-
-    res.redirect(`/campground/${id}`);
-  })
-);
-
-// CREATE
-app.post(
-  "/campground",
-  validateCampground,
-  catchAsync(async (req, res) => {
-    const newCamp = new Campground(req.body.camp);
-    await newCamp.save();
-    res.redirect(`/campground/${newCamp._id}`);
-  })
-);
-
-// SHOW
-app.get(
-  "/campground/:id",
-  catchAsync(async (req, res) => {
-    const camp = await Campground.findById(req.params.id).populate("reviews");
-    res.render("campground/show", { camp, reviews: camp.reviews });
-  })
-);
-
-// EDIT
-app.get(
-  "/campground/:id/edit",
-  catchAsync(async (req, res) => {
-    const { id } = req.params;
-    const camp = await Campground.findById(id);
-    if (!camp) throw new ExpressError("Campground not found", 404);
-    res.render("campground/edit", { camp });
-  })
-);
-
-// UPDATE
-app.put(
-  "/campground/:id",
-  validateCampground,
-  catchAsync(async (req, res) => {
-    const { id } = req.params;
-    const cmp = await Campground.findByIdAndUpdate(
-      id,
-      { ...req.body.camp },
-      { runValidators: true, new: true }
-    );
-    if (!cmp) throw new ExpressError("Campground not found", 404);
-    res.redirect(`/campground/${cmp._id}`);
-  })
-);
-
-// DELETE
-app.delete(
-  "/campground/:id",
-  catchAsync(async (req, res) => {
-    const { id } = req.params;
-    const deleted = await Campground.findByIdAndDelete(id);
-    if (!deleted) throw new ExpressError("Campground not found", 404);
-    res.redirect("/campground");
-  })
-);
 
 // 404 handler
 app.all(/(.*)/, (req, res, next) => {
